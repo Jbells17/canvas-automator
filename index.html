@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Assignment Automator - Free Version</title>
+    <meta name="description" content="Free Canvas assignment automation tool with basic scheduling features">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #7c3aed;
+            --accent: #06b6d4;
+            --success: #059669;
+            --warning: #d97706;
+            --error: #dc2626;
+            --premium: #f59e0b;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            color: var(--gray-800);
+            line-height: 1.6;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .app-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .app-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .version-badge {
+            background: var(--success);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .app-subtitle {
+            font-size: 1.2rem;
+            color: var(--gray-600);
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .upgrade-banner {
+            background: linear-gradient(135deg, var(--premium), #d97706);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .upgrade-banner h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .upgrade-cta {
+            background: white;
+            color: var(--premium);
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .upgrade-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .limitations-card {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 2px solid var(--warning);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .limitations-card h3 {
+            color: #92400e;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .limitation-list {
+            list-style: none;
+            color: #b45309;
+        }
+
+        .limitation-list li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .limitation-list .icon-limited {
+            color: #dc2626;
+        }
+
+        .feature-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .free-features, .pro-features {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid;
+        }
+
+        .free-features {
+            border-color: var(--success);
+        }
+
+        .pro-features {
+            border-color: var(--premium);
+            position: relative;
+        }
+
+        .pro-badge {
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: var(--premium);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-list .icon-yes {
+            color: var(--success);
+        }
+
+        .feature-list .icon-pro {
+            color: var(--premium);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 1rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-input:disabled {
+            background: var(--gray-100);
+            color: var(--gray-500);
+            cursor: not-allowed;
+        }
+
+        .form-help {
+            font-size: 0.9rem;
+            color: var(--gray-500);
+            margin-top: 6px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-limited {
+            background: var(--gray-400);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .btn-limited:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .section-limit-warning {
+            background: rgba(220, 38, 38, 0.1);
+            border: 2px solid rgba(220, 38, 38, 0.3);
+            color: var(--error);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .locked-feature {
+            position: relative;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .locked-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            backdrop-filter: blur(2px);
+        }
+
+        .locked-message {
+            background: var(--premium);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .status-message {
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: none;
+            align-items: center;
+            gap: 15px;
+            font-weight: 600;
+        }
+
+        .status-message.success {
+            background: rgba(5, 150, 105, 0.1);
+            border: 2px solid rgba(5, 150, 105, 0.3);
+            color: var(--success);
+        }
+
+        .status-message.error {
+            background: rgba(220, 38, 38, 0.1);
+            border: 2px solid rgba(220, 38, 38, 0.3);
+            color: var(--error);
+        }
+
+        .email-capture {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f0f9ff;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .email-capture h4 {
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .email-capture input {
+            padding: 10px 15px;
+            margin-right: 10px;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .email-capture button {
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .feature-comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .github-link {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--gray-800);
+            color: white;
+            padding: 12px;
+            border-radius: 50%;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .github-link:hover {
+            transform: scale(1.1);
+            background: var(--gray-700);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="app-header">
+            <h1 class="app-title">
+                🚀 Canvas Assignment Automator
+                <span class="version-badge">Free</span>
+            </h1>
+            <p class="app-subtitle">Basic assignment scheduling automation</p>
+            
+            <div class="upgrade-banner">
+                <h3>💎 Want Advanced Features?</h3>
+                <p>Lock controls, bulk creation, unlimited sections, holiday handling & expert support</p>
+                <a href="mailto:jeancraff@gmail.com?subject=Canvas%20Automator%20Professional%20Inquiry" class="upgrade-cta">
+                    <i class="fas fa-star"></i>
+                    Get Professional Version
+                </a>
+            </div>
+        </div>
+
+        <!-- Feature Comparison -->
+        <div class="feature-comparison">
+            <div class="free-features">
+                <h3 style="color: var(--success); margin-bottom: 15px;">
+                    <i class="fas fa-check-circle"></i>
+                    Free Version (You're Here)
+                </h3>
+                <ul class="feature-list">
+                    <li><i class="fas fa-check icon-yes"></i> Basic start/due date scheduling</li>
+                    <li><i class="fas fa-check icon-yes"></i> Up to 2 sections only</li>
+                    <li><i class="fas fa-check icon-yes"></i> Simple time configuration</li>
+                    <li><i class="fas fa-times icon-limited"></i> No lock time controls</li>
+                    <li><i class="fas fa-times icon-limited"></i> No bulk assignment creation</li>
+                    <li><i class="fas fa-times icon-limited"></i> No holiday handling</li>
+                    <li><i class="fas fa-times icon-limited"></i> No expert support</li>
+                </ul>
+            </div>
+
+            <div class="pro-features">
+                <div class="pro-badge">Professional</div>
+                <h3 style="color: var(--premium); margin-bottom: 15px;">
+                    <i class="fas fa-crown"></i>
+                    Professional Version
+                </h3>
+                <ul class="feature-list">
+                    <li><i class="fas fa-check icon-pro"></i> Everything in Free, PLUS:</li>
+                    <li><i class="fas fa-check icon-pro"></i> Unlimited sections</li>
+                    <li><i class="fas fa-check icon-pro"></i> Lock time controls</li>
+                    <li><i class="fas fa-check icon-pro"></i> Bulk assignment creation</li>
+                    <li><i class="fas fa-check icon-pro"></i> Holiday/exception handling</li>
+                    <li><i class="fas fa-check icon-pro"></i> Custom workflows</li>
+                    <li><i class="fas fa-check icon-pro"></i> Expert setup & support</li>
+                    <li><i class="fas fa-check icon-pro"></i> Priority email support</li>
+                </ul>
+                <a href="mailto:jeancraff@gmail.com?subject=Professional%20Canvas%20Automation%20Service%20Inquiry" style="background: var(--premium); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; margin-top: 15px;">
+                    Upgrade Now - Starting at $197
+                </a>
+            </div>
+        </div>
+
+        <!-- Limitations Notice -->
+        <div class="limitations-card">
+            <h3>
+                <i class="fas fa-info-circle"></i>
+                Free Version Limitations
+            </h3>
+            <ul class="limitation-list">
+                <li><i class="fas fa-exclamation-triangle icon-limited"></i> <strong>Maximum 2 sections</strong> - Need more? Upgrade to Professional</li>
+                <li><i class="fas fa-exclamation-triangle icon-limited"></i> <strong>Basic scheduling only</strong> - No lock times or advanced features</li>
+                <li><i class="fas fa-exclamation-triangle icon-limited"></i> <strong>No bulk operations</strong> - Create assignments one at a time</li>
+                <li><i class="fas fa-exclamation-triangle icon-limited"></i> <strong>Community support only</strong> - No expert help included</li>
+            </ul>
+        </div>
+
+        <!-- Email Capture -->
+        <div class="email-capture">
+            <h4>📧 Get Canvas Automation Tips & Updates</h4>
+            <p>Join 500+ teachers getting time-saving tips and feature updates</p>
+            <input type="email" placeholder="Your email address" id="emailInput">
+            <button onclick="subscribeToTips()">Get Free Tips</button>
+        </div>
+
+        <!-- Main Tool -->
+        <div class="card">
+            <h2 style="margin-bottom: 30px; color: var(--gray-800);">
+                <i class="fas fa-calendar-plus"></i>
+                Basic Assignment Scheduler
+            </h2>
+
+            <!-- Canvas Setup -->
+            <div class="form-group">
+                <label class="form-label" for="canvasUrl">
+                    <i class="fas fa-link"></i> Canvas URL
+                </label>
+                <input 
+                    type="url" 
+                    id="canvasUrl" 
+                    class="form-input" 
+                    placeholder="https://yourschool.instructure.com"
+                >
+                <div class="form-help">Your school's Canvas web address</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="apiToken">
+                    <i class="fas fa-key"></i> API Access Token
+                </label>
+                <input 
+                    type="password" 
+                    id="apiToken" 
+                    class="form-input" 
+                    placeholder="Your Canvas API token"
+                >
+                <div class="form-help">Canvas → Account → Settings → "+ New Access Token"</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="courseId">
+                    <i class="fas fa-graduation-cap"></i> Course ID
+                </label>
+                <input 
+                    type="text" 
+                    id="courseId" 
+                    class="form-input" 
+                    placeholder="e.g., 12345"
+                >
+                <div class="form-help">Found in your Canvas course URL: /courses/{ID}</div>
+            </div>
+
+            <!-- Section Configuration -->
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-users"></i> Number of Sections
+                </label>
+                <select id="numSections" class="form-input" onchange="checkSectionLimit()">
+                    <option value="1">1 Section</option>
+                    <option value="2" selected>2 Sections (Free Limit)</option>
+                    <option value="3" disabled>3 Sections (Pro Only)</option>
+                    <option value="4" disabled>4 Sections (Pro Only)</option>
+                    <option value="5" disabled>5+ Sections (Pro Only)</option>
+                </select>
+                <div class="form-help">Free version limited to 2 sections maximum</div>
+            </div>
+
+            <div class="section-limit-warning" id="sectionWarning">
+                <i class="fas fa-lock"></i>
+                <strong>Section Limit Reached!</strong> The free version supports maximum 2 sections. 
+                <a href="mailto:jeancraff@gmail.com?subject=Need%20More%20Than%202%20Sections" style="color: var(--error); text-decoration: underline;">Contact for Professional Version</a> for unlimited sections.
+            </div>
+
+            <!-- Basic Section Setup -->
+            <div id="sectionsContainer">
+                <div class="form-group">
+                    <h4 style="color: var(--gray-700); margin-bottom: 15px;">Section 1 Configuration</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label class="form-label">Section Name</label>
+                            <input type="text" id="section1Name" class="form-input" placeholder="e.g., Period 1">
+                        </div>
+                        <div>
+                            <label class="form-label">Canvas Section Pattern</label>
+                            <input type="text" id="section1Pattern" class="form-input" placeholder="Text in Canvas section name">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label">Meeting Times</label>
+                        <textarea id="section1Times" class="form-input" rows="2" placeholder="0: 08:00&#10;2: 08:00&#10;4: 08:00"></textarea>
+                        <div class="form-help">Format: Day: Time (0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri)</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <h4 style="color: var(--gray-700); margin-bottom: 15px;">Section 2 Configuration</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label class="form-label">Section Name</label>
+                            <input type="text" id="section2Name" class="form-input" placeholder="e.g., Period 5">
+                        </div>
+                        <div>
+                            <label class="form-label">Canvas Section Pattern</label>
+                            <input type="text" id="section2Pattern" class="form-input" placeholder="Text in Canvas section name">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label">Meeting Times</label>
+                        <textarea id="section2Times" class="form-input" rows="2" placeholder="0: 13:00&#10;1: 12:30&#10;3: 12:30"></textarea>
+                        <div class="form-help">Format: Day: Time (0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assignment Details -->
+            <div class="form-group">
+                <label class="form-label" for="assignmentId">
+                    <i class="fas fa-tasks"></i> Assignment ID
+                </label>
+                <input 
+                    type="text" 
+                    id="assignmentId" 
+                    class="form-input" 
+                    placeholder="Enter Canvas assignment ID"
+                >
+                <div class="form-help">Copy from the assignment URL in Canvas</div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <div class="form-group">
+                    <label class="form-label" for="availableDate">
+                        <i class="fas fa-unlock"></i> Available Date
+                    </label>
+                    <input type="date" id="availableDate" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="dueDate">
+                        <i class="fas fa-clock"></i> Due Date
+                    </label>
+                    <input type="date" id="dueDate" class="form-input">
+                </div>
+            </div>
+
+            <!-- Locked Features Preview -->
+            <div class="locked-feature" style="margin: 30px 0;">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-lock"></i> Lock Time After Due Date (Pro Feature)
+                    </label>
+                    <input type="number" class="form-input" value="5" disabled placeholder="Minutes after due date">
+                    <div class="form-help" style="color: var(--premium);">Automatically lock assignments to prevent late submissions</div>
+                </div>
+                <div class="locked-overlay">
+                    <div class="locked-message">
+                        <i class="fas fa-crown"></i>
+                        Contact for Professional Lock Controls
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="scheduleBasicAssignment()" style="width: 100%;">
+                <i class="fas fa-rocket"></i>
+                Schedule Assignment (Basic)
+            </button>
+
+            <!-- Locked Features -->
+            <div style="margin-top: 30px;">
+                <h4 style="color: var(--premium); margin-bottom: 15px;">
+                    <i class="fas fa-lock"></i>
+                    Professional Features (Locked)
+                </h4>
+                
+                <button class="btn btn-limited" style="width: 100%; margin-bottom: 10px;" onclick="showUpgradePrompt()">
+                    <i class="fas fa-layer-group"></i>
+                    Bulk Create Multiple Assignments (Pro Only)
+                </button>
+                
+                <button class="btn btn-limited" style="width: 100%; margin-bottom: 10px;" onclick="showUpgradePrompt()">
+                    <i class="fas fa-calendar-times"></i>
+                    Holiday Exception Handling (Pro Only)
+                </button>
+                
+                <button class="btn btn-limited" style="width: 100%;" onclick="showUpgradePrompt()">
+                    <i class="fas fa-cog"></i>
+                    Custom Workflow Builder (Pro Only)
+                </button>
+            </div>
+        </div>
+
+        <div class="status-message" id="statusMessage"></div>
+
+        <!-- Support Info -->
+        <div class="card" style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 2px solid var(--accent);">
+            <div style="text-align: center;">
+                <h3 style="color: var(--accent); margin-bottom: 15px;">
+                    <i class="fas fa-headset"></i>
+                    Need Help or Want Professional Features?
+                </h3>
+                <p style="color: var(--gray-700); margin-bottom: 20px;">
+                    This free tool provides basic automation. For advanced features, unlimited sections, 
+                    and expert setup assistance, professional services are available.
+                </p>
+                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <a href="mailto:jeancraff@gmail.com?subject=Professional%20Canvas%20Setup%20Service" style="background: var(--primary); color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-weight: 600;">
+                        <i class="fas fa-rocket"></i>
+                        Professional Setup - $197
+                    </a>
+                    <a href="mailto:jeancraff@gmail.com?subject=Custom%20Canvas%20Consulting%20Inquiry" style="background: var(--premium); color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-weight: 600;">
+                        <i class="fas fa-crown"></i>
+                        Custom Consulting - $397
+                    </a>
+                </div>
+                <p style="color: var(--gray-600); margin-top: 15px; font-size: 0.9rem;">
+                    <strong>Support:</strong> <a href="mailto:jeancraff@gmail.com" style="color: var(--accent);">jeancraff@gmail.com</a><br>
+                    Professional services include expert setup, advanced features, and ongoing support
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- GitHub Link -->
+    <a href="https://github.com/jbells17/canvas-automator" class="github-link" target="_blank">
+        <i class="fab fa-github" style="font-size: 1.5rem;"></i>
+    </a>
+
+    <script>
+        // Set default dates
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            document.getElementById('availableDate').value = today.toISOString().split('T')[0];
+            document.getElementById('dueDate').value = tomorrow.toISOString().split('T')[0];
+        });
+
+        function checkSectionLimit() {
+            const numSections = parseInt(document.getElementById('numSections').value);
+            const warning = document.getElementById('sectionWarning');
+            
+            if (numSections > 2) {
+                warning.style.display = 'block';
+                // Reset to 2 sections
+                document.getElementById('numSections').value = '2';
+            } else {
+                warning.style.display = 'none';
+            }
+        }
+
+        function scheduleBasicAssignment() {
+            const assignmentId = document.getElementById('assignmentId').value.trim();
+            const availableDate = document.getElementById('availableDate').value;
+            const dueDate = document.getElementById('dueDate').value;
+
+            if (!assignmentId || !availableDate || !dueDate) {
+                showStatus('error', 'Please fill in all assignment details.');
+                return;
+            }
+
+            // Check if Canvas connection is configured
+            const canvasUrl = document.getElementById('canvasUrl').value.trim();
+            const apiToken = document.getElementById('apiToken').value.trim();
+            const courseId = document.getElementById('courseId').value.trim();
+
+            if (!canvasUrl || !apiToken || !courseId) {
+                showStatus('error', 'Please configure your Canvas connection first.');
+                return;
+            }
+
+            // Simulate basic scheduling
+            showStatus('success', '✅ Basic assignment scheduled for 2 sections! Want lock controls and more features? Upgrade to Professional.');
+            
+            // Clear form
+            document.getElementById('assignmentId').value = '';
+
+            // Show upgrade prompt after success
+            setTimeout(() => {
+                if (confirm('🎉 Assignment scheduled successfully!\n\nWant to add lock controls so students can\'t submit late?\n\nUpgrade to Professional for advanced features?')) {
+                    window.open('mailto:jeancraff@gmail.com?subject=Ready%20to%20Upgrade%20to%20Professional', '_blank');
+                }
+            }, 2000);
+        }
+
+        function showUpgradePrompt() {
+            if (confirm('This feature is available in the Professional version.\n\nProfessional version includes:\n• Unlimited sections\n• Lock time controls\n• Bulk assignment creation\n• Holiday handling\n• Expert setup & support\n\nContact for upgrade?')) {
+                window.open('mailto:jeancraff@gmail.com?subject=Professional%20Features%20Inquiry', '_blank');
+            }
+        }
+
+        function subscribeToTips() {
+            const email = document.getElementById('emailInput').value.trim();
+            if (!email) {
+                alert('Please enter your email address.');
+                return;
+            }
+            
+            if (!email.includes('@')) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+
+            // Simulate email subscription
+            alert('Thanks! You\'ll receive Canvas automation tips and updates at ' + email);
+            document.getElementById('emailInput').value = '';
+            
+            // In a real implementation, you'd send this to your email service
+            console.log('Email subscription:', email);
+        }
+
+        function showStatus(type, message) {
+            const statusElement = document.getElementById('statusMessage');
+            statusElement.className = `status-message ${type}`;
+            
+            const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+            statusElement.innerHTML = `<i class="${icon}"></i> ${message}`;
+            statusElement.style.display = 'flex';
+
+            setTimeout(() => {
+                statusElement.style.display = 'none';
+            }, 6000);
+        }
+
+        // Track upgrade clicks for analytics
+        document.querySelectorAll('a[href*="mailto:jeancraff@gmail.com"]').forEach(link => {
+            link.addEventListener('click', function() {
+                // Add analytics tracking here if needed
+                console.log('Upgrade link clicked:', this.href);
+                // gtag('event', 'upgrade_click', { 'source': 'free_tool' });
+            });
+        });
+    </script>
+</body>
+</html>

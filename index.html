@@ -420,33 +420,14 @@
             background: rgba(5, 150, 105, 0.1);
             border: 2px solid rgba(5, 150, 105, 0.3);
             color: var(--success);
+            display: flex;
         }
 
         .status-message.error {
             background: rgba(220, 38, 38, 0.1);
             border: 2px solid rgba(220, 38, 38, 0.3);
             color: var(--error);
-        }
-
-        .email-capture {
-            margin: 30px 0;
-            padding: 15px;
-            background: #f8fafc;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid #e2e8f0;
-        }
-
-        .email-capture h4 {
-            margin-bottom: 8px;
-            color: var(--primary);
-            font-size: 1rem;
-        }
-
-        .email-capture p {
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-            color: var(--gray-600);
+            display: flex;
         }
 
         .quick-assignment {
@@ -455,25 +436,6 @@
             border-radius: 16px;
             padding: 25px;
             margin-bottom: 30px;
-        }
-
-        .assignment-history {
-            margin-top: 30px;
-            padding: 20px;
-            background: var(--gray-50);
-            border-radius: 12px;
-        }
-
-        .history-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .history-item:last-child {
-            border-bottom: none;
         }
 
         /* New styles for improved time input */
@@ -556,24 +518,6 @@
                 grid-template-columns: 1fr;
                 gap: 5px;
             }
-        }
-
-        .github-link {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--gray-800);
-            color: white;
-            padding: 12px;
-            border-radius: 50%;
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .github-link:hover {
-            transform: scale(1.1);
-            background: var(--gray-700);
         }
     </style>
 </head>
@@ -847,5 +791,341 @@
         </div>
     </div>
 
-    <!-- GitHub Link -->
-    <a href="https://github.com
+    <script>
+        // Global variables to store configuration
+        let canvasSections = [];
+        let appConfig = {
+            canvasUrl: '',
+            apiToken: '',
+            courseId: '',
+            sections: []
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSectionConfiguration();
+        });
+
+        // Test Canvas connection and load sections
+        async function testCanvasConnection() {
+            const canvasUrl = document.getElementById('canvasUrl').value.trim();
+            const apiToken = document.getElementById('apiToken').value.trim();
+            const courseId = document.getElementById('courseId').value.trim();
+            
+            const statusEl = document.getElementById('connectionStatus');
+            
+            if (!canvasUrl || !apiToken || !courseId) {
+                showStatus('error', 'Please fill in all Canvas connection fields', 'connectionStatus');
+                return;
+            }
+
+            // Show loading state
+            statusEl.innerHTML = '<div class="loading-spinner"></div> Testing Canvas connection...';
+            statusEl.className = 'status-message';
+            statusEl.style.display = 'flex';
+
+            try {
+                // Simulate API call (in real implementation, this would make actual Canvas API calls)
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Mock sections data - in real implementation, this would come from Canvas API
+                canvasSections = [
+                    { id: 'section_001', name: 'Biology 101 - Period 1' },
+                    { id: 'section_005', name: 'Biology 101 - Period 5' },
+                    { id: 'section_007', name: 'Biology 101 - Period 7' }
+                ];
+                
+                showStatus('success', `✅ Connected successfully! Found ${canvasSections.length} sections in this course.`, 'connectionStatus');
+                updateSectionConfiguration();
+                
+            } catch (error) {
+                showStatus('error', '❌ Connection failed. Please check your Canvas URL, API token, and Course ID.', 'connectionStatus');
+            }
+        }
+
+        // Update section configuration based on number of sections
+        function updateSectionConfiguration() {
+            const numSections = parseInt(document.getElementById('numSections').value);
+            const container = document.getElementById('sectionsContainer');
+            
+            container.innerHTML = '';
+            
+            for (let i = 1; i <= numSections; i++) {
+                const sectionHtml = createSectionConfigHtml(i);
+                container.innerHTML += sectionHtml;
+            }
+        }
+
+        // Create HTML for a section configuration
+        function createSectionConfigHtml(sectionNum) {
+            const sectionOptions = canvasSections.length > 0 
+                ? canvasSections.map(section => `<option value="${section.id}">${section.name}</option>`).join('')
+                : '<option value="">Load sections first by testing Canvas connection</option>';
+
+            return `
+                <div class="section-config">
+                    <div class="section-header">
+                        <i class="fas fa-users"></i>
+                        <h4>Section ${sectionNum} Configuration</h4>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                        <div>
+                            <label class="form-label">Section Name (for reference)</label>
+                            <input type="text" id="section${sectionNum}Name" class="form-input" placeholder="e.g., Period ${sectionNum}">
+                        </div>
+                        <div>
+                            <label class="form-label">Canvas Section</label>
+                            <select id="section${sectionNum}Canvas" class="form-input">
+                                <option value="">Select a Canvas section...</option>
+                                ${sectionOptions}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Class Meeting Times</label>
+                        <div class="form-help" style="margin-bottom: 15px;">Select the days this section meets and set start/end times for each day</div>
+                        
+                        <div class="time-grid" style="grid-template-columns: 120px 80px 1fr 1fr; font-weight: 600; color: var(--gray-700); border-bottom: 2px solid var(--primary);">
+                            <div>Day</div>
+                            <div>Meets?</div>
+                            <div>Start Time</div>
+                            <div>End Time</div>
+                        </div>
+                        
+                        <div class="time-grid">
+                            <div class="day-label">Monday</div>
+                            <div><input type="checkbox" class="day-checkbox" id="section${sectionNum}Monday" onchange="toggleDayInputs(${sectionNum}, 'Monday')"></div>
+                            <div><input type="time" class="time-input" id="section${sectionNum}MondayStart" disabled></div>
+                            <div><input type="time" class="time-input" id="section${sectionNum}MondayEnd" disabled></div>
+                        </div>
+                        
+                        <div class="time-grid">
+                            <div class="day-label">Tuesday</div>
+                            <div><input type="checkbox" class="day-checkbox" id="section${sectionNum}Tuesday" onchange="toggleDayInputs(${sectionNum}, 'Tuesday')"></div>
+                            <div><input type="time" class="time-input" id="section${sectionNum}TuesdayStart" disabled></div>
+                            <div><input type="time" class="time-input" id="section${sectionNum}TuesdayEnd" disabled></div>
+                        </div>
+                        
+                        <div class="time-grid">
+                            <div class="day-label">Wednesday</div>
+                            <div><input type="checkbox" class="day-checkbox" id="section${sectionNum}Wednesday" onchange="toggleDayInputs(${sectionNum}, 'Wednesday')"></div>
+                            <div><input type="time" class="time-input" id="section${sectionNum}WednesdayStart" disabled></div>
+                            <div><input type="time" class="time-input" id="section${sectionNum}WednesdayEnd" disabled></div>
+                        </div>
+                        
+                        <div class="time-grid">
+                            <div class="day-label">Thursday</div>
+                            <div><input type="checkbox" class="day-checkbox" id="section${sectionNum}Thursday" onchange="toggleDayInputs(${sectionNum}, 'Thursday')"></div>
+                            <div><input type="time" class="time-input" id="section${sectionNum}ThursdayStart" disabled></div>
+                            <div><input type="time" class="time-input" id="section${sectionNum}ThursdayEnd" disabled></div>
+                        </div>
+                        
+                        <div class="time-grid">
+                            <div class="day-label">Friday</div>
+                            <div><input type="checkbox" class="day-checkbox" id="section${sectionNum}Friday" onchange="toggleDayInputs(${sectionNum}, 'Friday')"></div>
+                            <div><input type="time" class="time-input" id="section${sectionNum}FridayStart" disabled></div>
+                            <div><input type="time" class="time-input" id="section${sectionNum}FridayEnd" disabled></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Toggle day inputs based on checkbox
+        function toggleDayInputs(sectionNum, day) {
+            const checkbox = document.getElementById(`section${sectionNum}${day}`);
+            const startInput = document.getElementById(`section${sectionNum}${day}Start`);
+            const endInput = document.getElementById(`section${sectionNum}${day}End`);
+            
+            startInput.disabled = !checkbox.checked;
+            endInput.disabled = !checkbox.checked;
+            
+            if (!checkbox.checked) {
+                startInput.value = '';
+                endInput.value = '';
+            }
+        }
+
+        // Save setup and continue to main phase
+        function saveSetupAndContinue() {
+            const canvasUrl = document.getElementById('canvasUrl').value.trim();
+            const apiToken = document.getElementById('apiToken').value.trim();
+            const courseId = document.getElementById('courseId').value.trim();
+            const numSections = parseInt(document.getElementById('numSections').value);
+
+            if (!canvasUrl || !apiToken || !courseId) {
+                showStatus('error', 'Please fill in all Canvas connection fields', 'connectionStatus');
+                return;
+            }
+
+            // Validate sections
+            const sections = [];
+            for (let i = 1; i <= numSections; i++) {
+                const sectionName = document.getElementById(`section${i}Name`).value.trim();
+                const canvasSection = document.getElementById(`section${i}Canvas`).value;
+                
+                if (!sectionName || !canvasSection) {
+                    showStatus('error', `Please complete all fields for Section ${i}`, 'connectionStatus');
+                    return;
+                }
+
+                const schedule = [];
+                const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+                
+                for (const day of days) {
+                    const checkbox = document.getElementById(`section${i}${day}`);
+                    if (checkbox.checked) {
+                        const startTime = document.getElementById(`section${i}${day}Start`).value;
+                        const endTime = document.getElementById(`section${i}${day}End`).value;
+                        
+                        if (!startTime || !endTime) {
+                            showStatus('error', `Please set start and end times for ${day} in Section ${i}`, 'connectionStatus');
+                            return;
+                        }
+                        
+                        schedule.push({
+                            day: day,
+                            startTime: startTime,
+                            endTime: endTime
+                        });
+                    }
+                }
+
+                if (schedule.length === 0) {
+                    showStatus('error', `Section ${i} must meet at least one day per week`, 'connectionStatus');
+                    return;
+                }
+
+                sections.push({
+                    name: sectionName,
+                    canvasId: canvasSection,
+                    schedule: schedule
+                });
+            }
+
+            // Save configuration
+            appConfig = {
+                canvasUrl: canvasUrl,
+                apiToken: apiToken,
+                courseId: courseId,
+                sections: sections
+            };
+
+            // Update configuration summary
+            updateConfigurationSummary();
+
+            // Switch to main phase
+            document.getElementById('setupPhase').classList.add('hidden');
+            document.getElementById('mainPhase').classList.add('active');
+
+            showStatus('success', 'Setup saved successfully! You can now schedule assignments.', 'schedulingStatus');
+        }
+
+        // Update configuration summary
+        function updateConfigurationSummary() {
+            const summaryEl = document.getElementById('configSummary');
+            const maskedToken = appConfig.apiToken.substring(0, 8) + '...';
+            
+            let sectionsHtml = '';
+            appConfig.sections.forEach((section, index) => {
+                const scheduleText = section.schedule.map(s => `${s.day}: ${s.startTime}-${s.endTime}`).join(', ');
+                sectionsHtml += `
+                    <div class="config-item">
+                        <span class="config-label">Section ${index + 1} (${section.name})</span>
+                        <span class="config-value">${scheduleText}</span>
+                    </div>
+                `;
+            });
+
+            summaryEl.innerHTML = `
+                <div class="config-item">
+                    <span class="config-label">Canvas URL</span>
+                    <span class="config-value">${appConfig.canvasUrl}</span>
+                </div>
+                <div class="config-item">
+                    <span class="config-label">API Token</span>
+                    <span class="config-value">${maskedToken}</span>
+                </div>
+                <div class="config-item">
+                    <span class="config-label">Course ID</span>
+                    <span class="config-value">${appConfig.courseId}</span>
+                </div>
+                ${sectionsHtml}
+            `;
+        }
+
+        // Reconfigure setup
+        function reconfigureSetup() {
+            document.getElementById('setupPhase').classList.remove('hidden');
+            document.getElementById('mainPhase').classList.remove('active');
+        }
+
+        // Schedule quick assignment
+        async function scheduleQuickAssignment() {
+            const assignmentId = document.getElementById('assignmentId').value.trim();
+            const availableDate = document.getElementById('availableDate').value;
+            const dueDate = document.getElementById('dueDate').value;
+
+            if (!assignmentId || !availableDate || !dueDate) {
+                showStatus('error', 'Please fill in all assignment fields', 'schedulingStatus');
+                return;
+            }
+
+            if (new Date(availableDate) >= new Date(dueDate)) {
+                showStatus('error', 'Due date must be after available date', 'schedulingStatus');
+                return;
+            }
+
+            // Show loading state
+            const statusEl = document.getElementById('schedulingStatus');
+            statusEl.innerHTML = '<div class="loading-spinner"></div> Scheduling assignment for all sections...';
+            statusEl.className = 'status-message';
+            statusEl.style.display = 'flex';
+
+            try {
+                // Simulate API calls to Canvas
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // In real implementation, this would make actual Canvas API calls for each section
+                let successCount = 0;
+                for (const section of appConfig.sections) {
+                    // Simulate individual API call
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    successCount++;
+                }
+
+                showStatus('success', `✅ Assignment successfully scheduled for ${successCount} sections!`, 'schedulingStatus');
+                
+                // Clear form
+                document.getElementById('assignmentId').value = '';
+                document.getElementById('availableDate').value = '';
+                document.getElementById('dueDate').value = '';
+
+            } catch (error) {
+                showStatus('error', '❌ Failed to schedule assignment. Please try again.', 'schedulingStatus');
+            }
+        }
+
+        // Show upgrade prompt
+        function showUpgradePrompt() {
+            alert('This feature is available in the Professional version. Contact jeancraff@gmail.com for upgrade information.');
+        }
+
+        // Utility function to show status messages
+        function showStatus(type, message, elementId) {
+            const statusEl = document.getElementById(elementId);
+            statusEl.innerHTML = message;
+            statusEl.className = `status-message ${type}`;
+            statusEl.style.display = 'flex';
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

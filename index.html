@@ -819,27 +819,85 @@
                 return;
             }
 
+            // Ensure Canvas URL ends with proper format
+            let baseUrl = canvasUrl;
+            if (!baseUrl.endsWith('/')) {
+                baseUrl += '/';
+            }
+
             // Show loading state
             statusEl.innerHTML = '<div class="loading-spinner"></div> Testing Canvas connection...';
             statusEl.className = 'status-message';
             statusEl.style.display = 'flex';
 
             try {
-                // Simulate API call (in real implementation, this would make actual Canvas API calls)
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                // First, test the connection by getting course info
+                const courseUrl = `${baseUrl}api/v1/courses/${courseId}`;
+                const courseResponse = await fetch(courseUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${apiToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!courseResponse.ok) {
+                    if (courseResponse.status === 401) {
+                        throw new Error('Invalid API token. Please check your access token.');
+                    } else if (courseResponse.status === 404) {
+                        throw new Error('Course not found. Please check your Course ID.');
+                    } else {
+                        throw new Error(`Canvas API error: ${courseResponse.status} ${courseResponse.statusText}`);
+                    }
+                }
+
+                const courseData = await courseResponse.json();
+                console.log('Course data:', courseData);
+
+                // Now get the sections for this course
+                const sectionsUrl = `${baseUrl}api/v1/courses/${courseId}/sections`;
+                const sectionsResponse = await fetch(sectionsUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${apiToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!sectionsResponse.ok) {
+                    throw new Error(`Failed to fetch sections: ${sectionsResponse.status} ${sectionsResponse.statusText}`);
+                }
+
+                const sectionsData = await sectionsResponse.json();
+                console.log('Sections data:', sectionsData);
+
+                // Transform the sections data
+                canvasSections = sectionsData.map(section => ({
+                    id: section.id,
+                    name: section.name || `Section ${section.id}`
+                }));
+
+                if (canvasSections.length === 0) {
+                    showStatus('error', '⚠️ No sections found in this course. Make sure the course has sections set up.', 'connectionStatus');
+                    return;
+                }
                 
-                // Mock sections data - in real implementation, this would come from Canvas API
-                canvasSections = [
-                    { id: 'section_001', name: 'Biology 101 - Period 1' },
-                    { id: 'section_005', name: 'Biology 101 - Period 5' },
-                    { id: 'section_007', name: 'Biology 101 - Period 7' }
-                ];
-                
-                showStatus('success', `✅ Connected successfully! Found ${canvasSections.length} sections in this course.`, 'connectionStatus');
+                showStatus('success', `✅ Connected successfully! Found course "${courseData.name}" with ${canvasSections.length} sections.`, 'connectionStatus');
                 updateSectionConfiguration();
                 
             } catch (error) {
-                showStatus('error', '❌ Connection failed. Please check your Canvas URL, API token, and Course ID.', 'connectionStatus');
+                console.error('Canvas API Error:', error);
+                let errorMessage = '❌ Connection failed: ';
+                
+                if (error.message.includes('CORS')) {
+                    errorMessage += 'CORS error - Canvas may block browser requests. This tool may need to run from a server.';
+                } else if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+                    errorMessage += 'Network error. Check your Canvas URL format (should be https://yourschool.instructure.com)';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showStatus('error', errorMessage, 'connectionStatus');
             }
         }
 
